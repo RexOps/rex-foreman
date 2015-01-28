@@ -4,7 +4,7 @@ Author: jan gehring <jan.gehring@gmail.com>
 License: perl5
 Require:
   DM:
-    git: https://gitlab.dm-drogeriemarkt.com/lxdm/rex-dm
+    git: git@gitlab.dm-drogeriemarkt.com:lxdm/rex-dm.git
     branch: master
 
 PerlRequire:
