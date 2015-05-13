@@ -16,6 +16,8 @@ use Rex -base;
 use Rex::Group::Entry::Server;
 use Data::Dumper;
 
+no warnings 'redefine';
+
 has url      => (is => 'ro', isa => 'Str', required => 1);
 has user     => (is => 'ro', isa => 'Str', required => 1);
 has password => (is => 'ro', isa => 'Str', required => 1);
