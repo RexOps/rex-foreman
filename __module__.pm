@@ -9,11 +9,11 @@ use LWP::UserAgent;
 use JSON::XS;
 use MIME::Base64;
 use YAML;
-
 use DM;
 use DM::Helper;
 use Rex -base;
-use Rex::Group::Entry::Server;
+#use Rex::Group::Entry::Server;
+use Foreman::Server;
 use Data::Dumper;
 
 no warnings 'redefine';
@@ -61,7 +61,7 @@ sub get_hosts {
     copy_key deploy_user          => 'user'    , $host_data;
     copy_key deploy_user_password => 'password', $host_data;
 
-    push @ret, Rex::Group::Entry::Server->new(name => $host, %{ $host_data });
+    push @ret, Foreman::Server->new(name => $host, %{ $host_data });
   }
 
   @ret;
@@ -81,7 +81,7 @@ sub get_host {
   copy_key deploy_user          => 'user'    , $host_data;
   copy_key deploy_user_password => 'password', $host_data;
 
-  return Rex::Group::Entry::Server->new(name => $option{host}, %{ $host_data });
+  return Foreman::Server->new(name => $option{host}, %{ $host_data });
 }
 
 sub get_host_parameters {
@@ -212,20 +212,5 @@ sub _build_query_string {
   return join('&', @url);
 }
 
-
-# patch Rex::Group::Entry::Server
-sub Rex::Group::Entry::Server::fact {
-  my ($self, $fact) = @_;
-
-  if( defined $fact && $self->{__puppet_fact__}->{$fact} ) {
-    return $self->{__puppet_fact__}->{$fact};
-  }
-
-  # no fact found, run facter
-  my $yaml = run "facter -y";
-  $self->{__puppet_fact__} = Load($yaml);
-
-  return $self->{__puppet_fact__}->{$fact};
-}
 
 1;
