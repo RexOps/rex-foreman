@@ -37,4 +37,10 @@ sub fact {
   return $self->{__puppet_fact__}->{$fact};
 }
 
+sub get_user {
+  my $self = shift;
+  return $self->{auth}->{user};
+}
+
+
 1;
