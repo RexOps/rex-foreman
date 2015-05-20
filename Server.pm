@@ -5,7 +5,7 @@ use common::sense;
 use Rex -base;
 use Rex::CMDB;
 
-use parent qw(Rex::Group::Entry::Server);
+use base qw(Rex::Group::Entry::Server);
 
 
 sub new {
