@@ -15,7 +15,7 @@ sub new {
 
   bless($self, $proto);
 
-  my $cmdb = get cmdb;
+  my $cmdb = get cmdb(undef, $self->{name});
   for my $key (keys %{ $cmdb }) {
     $self->{$key} = $cmdb->{$key};
   }
