@@ -38,7 +38,7 @@ sub get_hosts {
   my ($self, $option) = @_;
 
   my $hosts = $self->_request('api/hosts',
-                search => %{ $option }
+                search => $option
               );
 
   my @hosts = map { $_ = $_->{host}->{name} } @{ $hosts };
