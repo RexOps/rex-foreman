@@ -35,7 +35,14 @@ has ua       => (is => 'ro', default => sub {
                   });
 
 sub get_hosts {
-  my ($self, $option) = @_;
+  my $self = shift;
+  my $option;
+  if(ref $_[0] eq "HASH") {
+    $option = shift;
+  }
+  else {
+    $option = { @_ };
+  }
 
   if(exists $option->{service}) {
     $option->{class} = $option->{service};
