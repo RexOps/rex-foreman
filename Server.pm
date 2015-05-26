@@ -4,6 +4,8 @@ use common::sense;
 
 use Rex -base;
 use Rex::CMDB;
+use DM::Helper;
+
 
 use base qw(Rex::Group::Entry::Server);
 
@@ -18,6 +20,12 @@ sub new {
   my $cmdb = get cmdb(undef, $self->{name});
   for my $key (keys %{ $cmdb }) {
     $self->{$key} = $cmdb->{$key};
+    if($key eq "deploy_user") {
+      $self->{user} = $cmdb->{deploy_user};
+    }
+    if($key eq "deploy_user_password") {
+      $self->{password} = decrypt_string($cmdb->{deploy_user_password});
+    }
   }
 
   return $self;
