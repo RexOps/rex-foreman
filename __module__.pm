@@ -37,6 +37,11 @@ has ua       => (is => 'ro', default => sub {
 sub get_hosts {
   my ($self, $option) = @_;
 
+  if(exists $option->{service}) {
+    $option->{class} = $option->{service};
+    delete $option->{service};
+  }
+
   my $hosts = $self->_request('api/hosts',
                 search => $option
               );
