@@ -35,18 +35,10 @@ has ua       => (is => 'ro', default => sub {
                   });
 
 sub get_hosts {
-  my $self = shift;
-  my (%option) = validated_hash(
-    \@_,
-    environment => { isa => 'Str' },
-    service     => { isa => 'Str' },
-  );
+  my ($self, $option) = @_;
 
   my $hosts = $self->_request('api/hosts',
-                search => {
-                  environment => $option{environment},
-                  class       => $option{service},
-                }
+                search => $option
               );
 
   my @hosts = map { $_ = $_->{host}->{name} } @{ $hosts };
