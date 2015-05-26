@@ -20,12 +20,16 @@ sub new {
   my $cmdb = get cmdb(undef, $self->{name});
   for my $key (keys %{ $cmdb }) {
     $self->{$key} = $cmdb->{$key};
-    if($key eq "deploy_user") {
-      $self->{user} = $cmdb->{deploy_user};
-    }
-    if($key eq "deploy_user_password") {
-      $self->{password} = decrypt_string($cmdb->{deploy_user_password});
-    }
+  }
+
+  if($self->{deploy_user}) {
+    $self->{auth}->{user} = $self->{deploy_user};
+  }
+  if($self->{deploy_user_password}) {
+    $self->{auth}->{password} = decrypt_string($self->{deploy_user_password});
+  }
+  if($self->{auth_type}) {
+    $self->{auth}->{auth_type} = $self->{auth_type};
   }
 
   return $self;
