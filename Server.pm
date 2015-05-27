@@ -32,7 +32,15 @@ sub new {
     $self->{auth}->{user} = $self->{deploy_user};
   }
   if($self->{deploy_user_password}) {
-    $self->{auth}->{password} = decrypt_string($self->{deploy_user_password});
+    my $decr_pw;
+    eval {
+      $decr_pw = decrypt_string($self->{deploy_user_password});
+      1;
+    } or do {
+      $decr_pw = $self->{deploy_user_password};
+    };
+
+    $self->{auth}->{password} = $decr_pw;
   }
   if($self->{auth_type}) {
     $self->{auth}->{auth_type} = $self->{auth_type};
