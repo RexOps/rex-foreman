@@ -19,7 +19,13 @@ sub new {
 
   my $cmdb = get cmdb(undef, $self->{name});
   for my $key (keys %{ $cmdb }) {
-    $self->{$key} = $cmdb->{$key};
+    if($key =~ m/\.enc$/) {
+      my ($_tk) = ($key =~ m/^(.*)\./);
+      $self->{$_tk} = decrypt_string($cmdb->{$key});
+    }
+    else {
+      $self->{$key} = $cmdb->{$key};
+    }
   }
 
   if($self->{deploy_user}) {
@@ -31,6 +37,7 @@ sub new {
   if($self->{auth_type}) {
     $self->{auth}->{auth_type} = $self->{auth_type};
   }
+
 
   return $self;
 }
