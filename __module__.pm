@@ -18,18 +18,7 @@ no warnings 'redefine';
 has url      => (is => 'ro', isa => 'Str', required => 1);
 has user     => (is => 'ro', isa => 'Str', required => 1);
 has password => (is => 'ro', isa => 'Str', required => 1);
-has ua       => (is => 'ro', default => sub {
-                    my $lwp_useragent_version = $LWP::UserAgent::VERSION;
-                    my $ua;
-                    if($lwp_useragent_version <= 6) {
-                      $ua = LWP::UserAgent->new;
-                    }
-                    else {
-                      $ua = LWP::UserAgent->new(ssl_opts => {verify_hostname => 0});
-                    }
-#                    $ua->env_proxy;
-                    $ua;
-                  });
+has ua       => (is => 'ro', default => sub { LWP::UserAgent->new; });
 
 has modify_host_options => (is => 'ro', default => sub {});
 
