@@ -9,10 +9,7 @@ use LWP::UserAgent;
 use JSON::XS;
 use MIME::Base64;
 use YAML;
-use DM;
-use DM::Helper;
 use Rex -base;
-#use Rex::Group::Entry::Server;
 use Foreman::Server;
 use Data::Dumper;
 
@@ -33,6 +30,8 @@ has ua       => (is => 'ro', default => sub {
 #                    $ua->env_proxy;
                     $ua;
                   });
+
+has modify_host_options => (is => 'ro', default => sub {});
 
 sub get_hosts {
   my $self = shift;
@@ -59,13 +58,7 @@ sub get_hosts {
 
   for my $host (@hosts) {
     my $host_data = $self->get_host_parameters(host => $host);
-
-    $host_data->{deploy_user_password} = decrypt_string($host_data->{deploy_user_password});
-
-    copy_key deploy_user          => 'user'    , $host_data;
-    copy_key deploy_user_password => 'password', $host_data;
-
-    push @ret, Foreman::Server->new(name => $host, %{ $host_data });
+    push @ret, Foreman::Server->new(foreman => $self, name => $host, %{ $host_data });
   }
 
   @ret;
@@ -79,12 +72,6 @@ sub get_host {
   );
 
   my $host_data = $self->get_host_parameters(host => $option{host});
-
-  $host_data->{deploy_user_password} = decrypt_string($host_data->{deploy_user_password});
-
-  copy_key deploy_user          => 'user'    , $host_data;
-  copy_key deploy_user_password => 'password', $host_data;
-
   return Foreman::Server->new(name => $option{host}, %{ $host_data });
 }
 
@@ -102,14 +89,7 @@ sub get_host_parameters {
   my %host_data;
 
   for my $param (@{ $data->{host}->{parameters} }) {
-    if($param->{parameter}->{name} =~ m/\.enc$/) {
-      my $new_key_name = $param->{parameter}->{name};
-      $new_key_name =~ s/\.enc$//;
-      $host_data{$new_key_name} = decrypt_string($param->{parameter}->{value});
-    }
-    else {
-      $host_data{$param->{parameter}->{name}} = $param->{parameter}->{value};
-    }
+    $host_data{$param->{parameter}->{name}} = $param->{parameter}->{value};
   }
 
   # return a merged hash.
@@ -134,14 +114,7 @@ sub get_hostgroup_parameters {
   my $ret = {};
 
   for my $key (keys %{ $data->{hostgroup}->{parameters} }) {
-    if($key =~ m/\.enc$/) {
-      my $new_key_name = $key;
-      $new_key_name =~ s/\.enc$//;
-      $ret->{$new_key_name} = decrypt_string($data->{hostgroup}->{parameters}->{$key});
-    }
-    else {
-      $ret->{$key} = $data->{hostgroup}->{parameters}->{$key};
-    }
+    $ret->{$key} = $data->{hostgroup}->{parameters}->{$key};
   }
 
   return $ret;
