@@ -1,7 +1,7 @@
 Name: Foreman API
 Description: Small API to query foreman for hosts
-Author: jan gehring <jan.gehring@gmail.com>
-License: perl5
+License: Apache 2.0
+Author: FILIADATA GmbH
 
 PerlRequire:
   - Moose

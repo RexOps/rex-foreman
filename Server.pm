@@ -1,3 +1,9 @@
+#
+# (c) 2015 FILIADATA GmbH
+# 
+# vim: set ts=2 sw=2 tw=0:
+# vim: set expandtab:
+
 package Foreman::Server;
 
 use common::sense;
@@ -52,3 +58,46 @@ sub foreman {
 
 
 1;
+
+__END__
+
+=pod
+
+=head1 NAME
+
+Foreman::Server - Object to handle Foreman host entries.
+
+This Object inherits from I<Rex::Group::Entry::Server> and extends this object by some methods that are helpfull when dealing with foreman and puppet hosts.
+
+This is an internal object of the I<Foreman> module and normaly won't get called from the outside world.
+
+=head1 METHODS
+
+=over 4
+
+=item fact($factname)
+
+Read the facter information of the host and returns the requested value.
+
+=item foreman()
+
+The foreman object which was used to initialize the object.
+
+=back
+ 
+=head1 COPYRIGHT
+
+Copyright 2015 FILIADATA GmbH
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+
