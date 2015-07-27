@@ -48,7 +48,7 @@ sub fact {
 
 sub get_user {
   my $self = shift;
-  return $self->{auth}->{user};
+  return $self->SUPER::get_user();
 }
 
 sub foreman {
