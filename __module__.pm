@@ -67,7 +67,7 @@ sub get_host {
   );
 
   my $host_data = $self->get_host_parameters(host => $option{host});
-  return Foreman::Server->new(name => $option{host}, %{ $host_data });
+  return Foreman::Server->new(name => $option{host}, foreman => $self, %{ $host_data });
 }
 
 sub get_host_parameters {
