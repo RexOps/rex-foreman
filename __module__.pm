@@ -78,6 +78,8 @@ sub get_host_parameters {
   );
 
   my $data           = $self->_request("api/hosts/$host");
+  return {} if(!$data->{host}->{hostgroup_id}); # there is no group definition
+
   my $data_hostgroup = $self->get_hostgroup_parameters(hostgroup => $data->{host}->{hostgroup_id});
 
 
