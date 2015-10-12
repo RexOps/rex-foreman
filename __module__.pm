@@ -18,6 +18,7 @@ use YAML;
 use Rex -base;
 use Foreman::Server;
 use Data::Dumper;
+use Storable;
 
 no warnings 'redefine';
 
@@ -25,6 +26,7 @@ has url      => (is => 'ro', isa => 'Str', required => 1);
 has user     => (is => 'ro', isa => 'Str', required => 1);
 has password => (is => 'ro', isa => 'Str', required => 1);
 has ua       => (is => 'ro', default => sub { LWP::UserAgent->new; });
+has cache    => (is => 'ro', default => sub { "/tmp/foreman.cache" });
 
 has modify_host_options => (is => 'ro', default => sub {});
 
@@ -151,9 +153,19 @@ sub _request {
 
   print Dumper($resp) if($ENV{DEBUG});
 
-  if(!$resp->is_success) {
+  my $from_cache = 0;
+  if($resp->code == 500) {
+    my $cache = retrieve $self->cache;
+    if(exists $cache->{$url}) {
+      $resp = $cache->{$url};
+      $from_cache = 1;
+    }
+  }
+  elsif(!$resp->is_success) {
     confess "Error requesting information from foreman.";
   }
+
+  store $resp, $self->cache if($from_cache == 0);
 
   if($type eq 'yaml') {
     return Load($resp->decoded_content);
