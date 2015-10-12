@@ -137,7 +137,6 @@ sub get_roles {
 
 sub _request {
   my ($self, $resource, %option) = @_;
-
   my $type = 'json';
 
   if(exists $option{TYPE}) {
@@ -146,8 +145,10 @@ sub _request {
   }
 
   my $url = $self->url . "$resource?" . $self->_build_query_string(%option);
+  my $ua = $self->ua;
+  $ua->timeout(30);
 
-  my $resp = $self->ua->get($url,
+  my $resp = $ua->get($url,
     Accept        => 'version=1,application/json',
     Authorization => "Basic " . encode_base64($self->user . ":" . $self->password));
 
@@ -157,22 +158,30 @@ sub _request {
   if($resp->code == 500) {
     my $cache = retrieve $self->cache;
     if(exists $cache->{$url}) {
-      $resp = $cache->{$url};
-      $from_cache = 1;
+      return $cache->{$url};
+    }
+    else {
+      confess "No cache entry for $url";
     }
   }
   elsif(!$resp->is_success) {
     confess "Error requesting information from foreman.";
   }
 
-  store $resp, $self->cache if($from_cache == 0);
-
+  my $ref;
   if($type eq 'yaml') {
-    return Load($resp->decoded_content);
+    $ref = Load($resp->decoded_content);
   }
 
-  my $ref = decode_json($resp->decoded_content);
+  $ref = decode_json($resp->decoded_content);
   print Dumper($ref) if (exists $ENV{DEBUG});
+
+  if($from_cache == 0) {
+    my $cache = retrieve $self->cache if(-f $self->cache);
+    $cache->{$url} = $ref;
+    store $cache, $self->cache;
+  }
+
   return $ref;
 }
 
@@ -181,7 +190,7 @@ sub _build_query_string {
 
   my @url = ();
 
-  for my $key (keys %option) {
+  for my $key (sort keys %option) {
     if(ref $option{$key} eq "HASH") {
       my @inner_value = ();
       for my $inner_key (keys %{ $option{$key} }) {
