@@ -156,6 +156,10 @@ sub _request {
 
   my $from_cache = 0;
   if($resp->code == 500) {
+    if(! -f $self->cache) {
+      print Dumper $resp;
+      die "Error reading cache file. Error in foreman communication.";
+    }
     my $cache = retrieve $self->cache;
     if(exists $cache->{$url}) {
       return $cache->{$url};
