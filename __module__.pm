@@ -1,4 +1,4 @@
-#
+#043c8b6f87f80ba4f8ae41c0056c82b9908760c5
 # (c) 2015 FILIADATA GmbH
 # 
 # vim: set ts=2 sw=2 tw=0:
@@ -45,8 +45,12 @@ sub get_hosts {
     delete $option->{service};
   }
 
+  my $no_host_data = $option->{no_host_data};
+  delete $option->{no_host_data};
+
   my $hosts = $self->_request('api/hosts',
-                search => $option
+                search => $option,
+                per_page => 9999,
               );
 
   my @hosts = map { $_ = $_->{host}->{name} } @{ $hosts };
@@ -54,7 +58,10 @@ sub get_hosts {
   my @ret;
 
   for my $host (@hosts) {
-    my $host_data = $self->get_host_parameters(host => $host);
+    my $host_data = {};
+    if(!$no_host_data) {
+      $host_data = $self->get_host_parameters(host => $host);
+    }
     push @ret, Foreman::Server->new(foreman => $self, name => $host, %{ $host_data });
   }
 
