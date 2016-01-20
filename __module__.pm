@@ -19,6 +19,7 @@ use Rex -base;
 use Foreman::Server;
 use Data::Dumper;
 use Storable;
+use URI::Escape;
 
 no warnings 'redefine';
 
@@ -45,20 +46,10 @@ sub get_hosts {
     delete $option->{service};
   }
 
-  my $hosts = $self->_request('api/hosts',
-                search => $option
-              );
+  my $retrieve_host_data = $option->{retrieve_host_data};
+  delete $option->{retrieve_host_data};
 
-  my @hosts = map { $_ = $_->{host}->{name} } @{ $hosts };
-
-  my @ret;
-
-  for my $host (@hosts) {
-    my $host_data = $self->get_host_parameters(host => $host);
-    push @ret, Foreman::Server->new(foreman => $self, name => $host, %{ $host_data });
-  }
-
-  @ret;
+  $self->search($self->_build_query_string(%{ $option }), $retrieve_host_data);
 }
 
 sub get_host {
@@ -70,6 +61,31 @@ sub get_host {
 
   my $host_data = $self->get_host_parameters(host => $option{host});
   return Foreman::Server->new(name => $option{host}, foreman => $self, %{ $host_data });
+}
+
+sub search {
+  my $self = shift;
+  my $searchstring = shift;
+  my $retrieve_host_data = shift // 1;
+
+  my $hosts = $self->_request('api/hosts', $self->_build_query_string(
+      search   => $searchstring,
+      per_page => 9999));
+
+  my @hosts = map { $_ = $_->{host}->{name} } @{ $hosts };
+
+  my @ret;
+
+  for my $host (@hosts) {
+    my $host_data = {};
+    if($retrieve_host_data) {
+      $host_data = $self->get_host_parameters(host => $host);
+    }
+    push @ret, Foreman::Server->new(foreman => $self, name => $host, %{ $host_data });
+  }
+
+  @ret;
+
 }
 
 sub get_host_parameters {
@@ -127,8 +143,8 @@ sub get_environments {
 
 sub get_roles {
   my $self = shift;
-  my $data = $self->_request('api/puppetclasses',
-    per_page => 9999
+  my $data = $self->_request('api/puppetclasses', $self->_build_query_string(
+    per_page => 9999)
   );
   return grep { m/^role_/ } keys %{ $data };
 }
@@ -136,15 +152,9 @@ sub get_roles {
 ### Private:
 
 sub _request {
-  my ($self, $resource, %option) = @_;
-  my $type = 'json';
+  my ($self, $resource, $query_string) = @_;
 
-  if(exists $option{TYPE}) {
-    $type = $option{TYPE};
-    delete $option{TYPE};
-  }
-
-  my $url = $self->url . "$resource?" . $self->_build_query_string(%option);
+  my $url = $self->url . $resource . "?" . ($query_string || "");
   my $ua = $self->ua;
   $ua->timeout(30);
 
@@ -173,9 +183,6 @@ sub _request {
   }
 
   my $ref;
-  if($type eq 'yaml') {
-    $ref = Load($resp->decoded_content);
-  }
 
   $ref = decode_json($resp->decoded_content);
   print Dumper($ref) if (exists $ENV{DEBUG});
@@ -195,22 +202,11 @@ sub _build_query_string {
   my @url = ();
 
   for my $key (sort keys %option) {
-    if(ref $option{$key} eq "HASH") {
-      my @inner_value = ();
-      for my $inner_key (keys %{ $option{$key} }) {
-        push @inner_value, "$inner_key\%3D" . $option{$key}->{$inner_key};
-      }
-
-      push @url, $key . '=' . join('%26', @inner_value);
-    }
-    else {
-      push @url, "$key=$option{$key}";
-    }
+    push @url, "$key=" . uri_escape($option{$key});
   }
 
   return join('&', @url);
 }
-
 
 1;
 
