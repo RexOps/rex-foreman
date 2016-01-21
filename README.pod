@@ -1,1 +1,82 @@
-# Rex Foreman API
+=pod
+
+=head1 NAME
+
+Foreman - Read host information out of Foreman.
+
+With this module you can retrieve hosts and host parameter from Foreman. You can create dynamic groups out of these hosts.
+
+=head1 SYNOPSIS
+
+ use Foreman;
+
+ my $foreman = Foreman->new(
+   url      => "https://foreman.your-domain.tld",
+   user     => "foreman-user",
+   password => "foreman-password",
+ );
+
+ group frontends => $foreman->get_hosts(environment => "stage", service => "shop");
+
+=head1 METHODS
+
+=over 4
+
+=item get_hosts(%query_options)
+
+The I<get_hosts()> method will construct a search query with the given key => value parameters and send it to foreman. The returning data will be converted in an array. Every Array-Item is an object of the type I<Foreman::Server>. This object can just be passed on to the I<group()> function.
+
+If you store the authentication settings inside Foreman you can modify these data inside the I<Foreman::Server> object so that Rex knows which login and password to use.
+
+ my $foreman = Foreman->new(
+   url      => "https://foreman.your-domain.tld",
+   user     => "foreman-user",
+   password => "foreman-password",
+   modify_host_options => sub {
+    my ($foreman, $server) = @_;
+    $server->{auth}->{user}      = $server->{deploy_user};
+    $server->{auth}->{password}  = decrypt($server->{deploy_password});
+    $server->{auth}->{auth_type} = $server->{auth_type};
+   },
+ );
+
+
+=item get_host(host => "hostname")
+
+This method will return a single host object (I<Foreman::Server>).
+
+
+=item get_environments()
+
+This method will return all environments Foreman is aware of. It will return a list of names.
+
+=item get_roles()
+
+This method will return a list of roles Foreman knows (for example Puppet roles). In fact this method is querying Foreman for all known I<puppetclasses> and return the ones which start with I<role_>.
+
+
+=item get_hostgroup_parameters(hostgroup => "hostgroup-name")
+
+This method will return all parameters that are registered with a hostgroup.
+
+=item get_host_parameters(host => "hostname")
+
+This method will return all host parameters that are registered with a host. It will also merge the hostgroup parameters.
+
+=back
+
+=head1 COPYRIGHT
+
+Copyright 2015 FILIADATA GmbH
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
