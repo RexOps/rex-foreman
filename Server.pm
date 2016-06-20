@@ -27,7 +27,7 @@ sub new {
     $self->{$key} = $cmdb->{$key};
   }
 
-  $self->foreman->modify_host_options->($self->foreman, $self);
+  $self->foreman->modify_host_options->($self->foreman, $self) if($self->foreman->modify_host_options);
 
   return $self;
 }
