@@ -188,7 +188,11 @@ sub _request {
   print Dumper($ref) if (exists $ENV{DEBUG});
 
   if($from_cache == 0) {
-    my $cache = retrieve $self->cache if(-f $self->cache);
+    my $cache = {};
+    eval {
+      $cache = retrieve $self->cache if(-f $self->cache);
+      1;
+    };
     $cache->{$url} = $ref;
     store $cache, $self->cache;
   }
